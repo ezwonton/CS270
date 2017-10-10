@@ -1,0 +1,5 @@
+#lang racket
+
+(define (sqr x)
+  (* x x)
+)
