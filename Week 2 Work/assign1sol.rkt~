@@ -313,14 +313,10 @@ unit test that verifies a specified property of Boolean functions.
 ; Use the unit test provided to check your implementations.
 
 (define (andlist L)
-  (cond
-    [(null? L) #t]
-    [else (foldr andi '() L)]
-  )
+  (foldr andi #t L)
 )
 (define (orlist L)
-  (foldr ori '() L
-  )
+  (foldr ori #f L)
 )
 (define-test-suite testboollist
   (check-equal? (andlist '()) #t)
@@ -345,12 +341,11 @@ unit test that verifies a specified property of Boolean functions.
 ; Input:  L is a list of integers.
 ; Output: a boolean value which is true when all of the elements in L
 ;         are equal to one and false otherwise.
-#|
+
 (define (allones L)
   (cond
-  [(null? L) "no list given"]
-  [(eq? (first L) 1) (allones (rest L))]
-  [else #f]
+    [(null? L) #f]
+    [else (andlist (map (lambda (x) (if (= x 1) #t #f)) L))]
   )
 )
 
@@ -364,20 +359,27 @@ unit test that verifies a specified property of Boolean functions.
 (print "Question 10:  Testing allones")
 (newline)
 (run-tests testallones 'verbose)
-|#
-;Question 11.
+
+; Question 11.
 ; Write a recursive function atleastone to check if a list of integers
 ; contains atleast one one. Use the provided unit test to test your
 ; implementation.  Don't forget the base case and the necessary recursion. 
 
-#|
+
 ; Check if a list contains atleast one one
 ; Input:  L is a list of integers.
 ; Output: a boolean value which is true when atleast one of the elements
 ;          in L is equal to one and false otherwise.
 (define (atleastone L)
-  ... )
-
+  (begin
+   (display (map (lambda (x) (if (= x 1) #t #f)) L))
+   (display (orlist (map (lambda (x) (if (= x 1) #t #f)) L)))
+   (display "\n")
+  (cond
+    [(null? L) #f]
+    [else (orlist (map (lambda (x) (if (= x 1) #t #f)) L))]
+  ))
+)
 (define-test-suite testatleastone
   (check-equal?
     (atleastone '(0 0 0)) #f)
@@ -392,20 +394,24 @@ unit test that verifies a specified property of Boolean functions.
 (print "Question 11:  Testing atleastone")
 (newline)
 (run-tests testatleastone 'verbose)
-|#
+
 
 ;Question 12.
 ; Write a recursive function exactlyone to check if a list of integers
 ; contains exactly one one. Use the provided unit test to test your
 ; implementation.  Don't forget the base case and the necessary recursion. 
 
-#|
+
 ; Check if a list contains exactly one one
 ; Input:  L is a list of integers.
 ; Output: a boolean value which is true when exactly one of the elements
 ;          in L is equal to one and false otherwise. 
 (define (exactlyone L)
-  ... )
+  (cond
+    [(null? L) #f]
+    [else (if (= 1 (foldr + 0 L)) #t #f)]
+  )
+)
 
 (define-test-suite testexactlytone
   (check-equal?
@@ -421,7 +427,7 @@ unit test that verifies a specified property of Boolean functions.
 (print "Question 12:  Testing exactlyones")
 (newline)
 (run-tests testexactlytone 'verbose)
-|#
+
 
 ;Question 13.
 ; Write a recursive function oddones to check if a list of integers
@@ -429,13 +435,17 @@ unit test that verifies a specified property of Boolean functions.
 ; your implementation.  Don't forget the base case and the necessary
 ; recursion. 
 
-#|
+
 ; Check if a list contains an odd number of ones
 ; Input:  L is a list of integers.
 ; Output: a boolean value which is true when an odd number of the elements
 ;          in L is equal to one and false otherwise. 
 (define (oddones L)
-  ... )
+  (cond
+    [(null? L) #f]
+    [else (if (odd? (foldr + 0 L)) #t #f)]
+  )
+)
 
 (define-test-suite testoddones
   (check-equal?
@@ -451,4 +461,3 @@ unit test that verifies a specified property of Boolean functions.
 (print "Question 13:  Testing oddones")
 (newline)
 (run-tests testoddones 'verbose)
-|#

@@ -1,5 +1,5 @@
 #lang racket
-#|
+
 (display "\nLab Question 1\n")
 (define listex '(1 2 3 4 5 6 7 8 9))
 
@@ -43,7 +43,7 @@
 )
 (define listex2 '(-1 -2 -3 4 -5 6 -7 8 9))
 (neglist 0 listex2)
-|#
+
 (display "\nLab Question 4\n")
 #|
 n length dominoes

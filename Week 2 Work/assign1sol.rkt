@@ -344,8 +344,9 @@ unit test that verifies a specified property of Boolean functions.
 
 (define (allones L)
   (cond
-    [(null? L) #f]
-    [else (andlist (map (lambda (x) (if (= x 1) #t #f)) L))]
+    [(null? L) #t]
+    ;[else (andlist (map (lambda (x) (if (= x 1) #t #f)) L))]
+    [else (if (eq? 1 (first L)) (allones (rest L)) #f)]
   )
 )
 
@@ -371,14 +372,11 @@ unit test that verifies a specified property of Boolean functions.
 ; Output: a boolean value which is true when atleast one of the elements
 ;          in L is equal to one and false otherwise.
 (define (atleastone L)
-  (begin
-   (display (map (lambda (x) (if (= x 1) #t #f)) L))
-   (display (orlist (map (lambda (x) (if (= x 1) #t #f)) L)))
-   (display "\n")
   (cond
     [(null? L) #f]
-    [else (orlist (map (lambda (x) (if (= x 1) #t #f)) L))]
-  ))
+    ;[else (orlist (map (lambda (x) (if (= x 1) #t #f)) L))]
+    [else (if (eq? 0 (first L)) (atleastone (rest L)) #t)]
+  )
 )
 (define-test-suite testatleastone
   (check-equal?
@@ -409,7 +407,8 @@ unit test that verifies a specified property of Boolean functions.
 (define (exactlyone L)
   (cond
     [(null? L) #f]
-    [else (if (= 1 (foldr + 0 L)) #t #f)]
+    ;[else (if (= 1 (foldr + 0 L)) #t #f)]
+    [else (if (eq? 0 (first L)) (exactlyone (rest L)) (if (null? (rest L)) #t #f))]
   )
 )
 
@@ -443,7 +442,10 @@ unit test that verifies a specified property of Boolean functions.
 (define (oddones L)
   (cond
     [(null? L) #f]
-    [else (if (odd? (foldr + 0 L)) #t #f)]
+    [(eq? 1 (first L))(noti (oddones (rest L)))]
+    [(eq? 0 (first L))(oddones (rest L))]
+    ;[else (if (odd? (foldr + 0 L)) #t #f)]
+    ;[else (if (eq? 0 (first L)) (oddones (rest L)) (if (odd? (foldr + 0 (rest L))) #f #t))]
   )
 )
 
