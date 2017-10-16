@@ -90,32 +90,17 @@ E.G.  (let* ((x 1) (y (+ x 3))) (+ x y)) returns 5
 
 (define (binadd cin a b)
   (begin
-    (display (quotient (+ cin
-                         (if (binzero? a) 0 (first a))
-                         (if (binzero? b) 0 (first b))
-                         ) 2))
-    (display (remainder (+ cin
-                         (if (binzero? a) 0 (first a))
-                         (if (binzero? b) 0 (first b))
-                         ) 2))
-    (display (null? cin))
+    (display (binzero? a))
+    (display (binzero? b))
+    (display (zero? cin))
     (display "\n")
     
   (cond
-   [(binzero? a) (zero? cin) b]
-   [(binzero? b) (zero? cin) a]
-   [else (cons (remainder (+ cin
-                         (if (binzero? a) 0 (first a))
-                         (if (binzero? b) 0 (first b))
-                         ) 2))
-    (binadd (quotient (+ cin
-                         (if (binzero? a) 0 (first a))
-                         (if (binzero? b) 0 (first b))
-                         ) 2)
-            (rest a)
-            (rest b)
-   )]
-   ))
+    [(binzero? a) (binadd cin 0 b)]
+    [(binzero? b) (binadd cin a 0)]
+    [(zero? cin) (binadd 0 a b)]
+    [else (cons (remainder (+ cin (rest a) (rest b)) 2))]
+  ))
 )
 
 ; Unit tests - tests binadd.

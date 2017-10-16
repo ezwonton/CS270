@@ -147,30 +147,56 @@ For questions 1-3 you should uncomment the appropriate unit tests.
 ; Output: a Peano number whose value is m-n if m >= n.
 ;         It is undefined otherwise.
 (define (sub m n)
-  "sub not implemented yet")
+  (if (zero? n)
+      m
+      (pred (sub m (pred n)))
+  )
+)
 
 ; Division of Peano numbers
 ; Input: m, n Peano numbers
 ; Output: a Peano number whose value q is the quotient of m divided by n.
 ;         m = q*n + r with 0 <= r < n.
 (define (div m n)
-  "div not implemented yet")
+  (if (eq? n 'zero)
+      'zero
+      (succ (sub n (div m (pred n)))))
+)
 
 ; Remainder of Peano numbers
 ; Input: m, n Peano numbers
 ; Output: a Peano number whose value r is the remainder of m divided by n.
 ;         m = q*n + r with 0 <= r < n.
 (define (rem m n)
-  "rem not implemented yet")
+  (if (eq? n 'zero)
+      'zero
+      (sub m (mult n (div m n))))
+)
 
 ; Greatest common divisor of Peano numbers
 ; Input: m, n Peano numbers
 ; Output: a Peano number equal to gcd(m,n).
 ; Note:  See definition of gcd and algorithm for computing the gcd above.
 (define (gcd m n)
-   "gcd not implemented yet")
-  
-#|  
+  (if (eq? n 'zero)
+      'zero
+)
+#|
+Question 3.  Implement a function to compute the greatest common divisor
+             of the Peano numbers m and n.  g = gcd(m,n) satisfies
+             1)  g is a common divisor of m and n.
+                 g divides m and g divides n.  I.E. the remainder when
+                 dividing m and n by g is 0.
+             2)  g is the greatest common divisor.
+                 If e divides m and e divides n then e must divide g.
+
+             The gcd(m,n) can be computed recursively.
+             1)  gcd(m,0) = m
+             2)  gcd(m,n) = gcd(n,remainder of m divided by n).
+
+For questions 1-3 you should uncomment the appropriate unit tests.
+|#
+
 ; Unit tests - tests Peano arithmetic.
 (define-test-suite peano-suite
 
@@ -196,7 +222,7 @@ For questions 1-3 you should uncomment the appropriate unit tests.
   
 (print "Running Peano number tests")  (newline)
 (run-tests peano-suite 'verbose)
-|#
+
   
 #|
 
