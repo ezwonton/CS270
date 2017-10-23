@@ -87,44 +87,24 @@ E.G.  (let* ((x 1) (y (+ x 3))) (+ x y)) returns 5
 ; introduced.
 ;
 
-(define (resultBit cin a b)
-  (remainder (+ cin (if (binzero? a) 0 (first a)) (if (binzero? b) 0 (first b))) 2)
-  ;(remainder (+ cin a b) 2)
-)
-
-(define (carryBit cin a b)
-  (quotient (+ cin (if (binzero? a) 0 (first a)) (if (binzero? b) 0 (first b))) 2)
-  ;(quotient (+ cin a b) 2)
-)
-
 (define (binadd cin a b)
-#|
-  (begin
-    (display cin)
-    (display a)
-    (display b)
-    (display (resultBit cin a b))
-    (display (carryBit cin a b))
-    (display "\n")
-|#
-  (cond        
-    ;[(binzero? a)(eq? 0 cin) b]
-    ;[(binzero? b)(eq? 0 cin) a]
-    [(and (binzero? a) (binzero? b)) (if (eq? cin 0) zero one)]
-    ;[(eq? (binzero? a) (eq? 0 cin)) b]
-    ;[(eq? (binzero? b) (eq? 0 cin)) a]
-    [(binzero? a) (cons (resultBit cin a b) (binadd (carryBit cin a b) zero (rest b)))]
-    [(binzero? b) (cons (resultBit cin a b) (binadd (carryBit cin a b) (rest a) zero))]
-    [else (cons (resultBit cin a b) (binadd (carryBit cin a b) (rest a) (rest b)))]
-  )
-)
+  (cond
+    [(and (binzero? a) (binzero? b)) (if (= cin 1) one zero)]
+    [(binzero? a) (if (= cin 1) (binadd 0 one b) b)]
+    [(binzero? b) (if (= cin 1) (binadd 0 a one) a)]
+    [else (let* ((a0 (first a))
+                 (b0 (first b))
+                 (cout (if (> (+ a0 b0 cin) 1) 1 0))
+                 (sum (if (odd? (+ a0 b0 cin)) 1 0)))
+            (cons sum (binadd cout (rest a) (rest b))))]
+    ))
 
 ; Unit tests - tests binadd.
 (define-test-suite binadd-suite
 
   (check-equal? 
     (binadd 0 '() '()) '())
-
+  
   (check-equal? 
     (binadd 1 '() '()) '(1))
 
@@ -136,7 +116,7 @@ E.G.  (let* ((x 1) (y (+ x 3))) (+ x y)) returns 5
 
   (check-equal? 
     (binadd 1 '() '(1 0 1)) '(0 1 1))
-
+  
   (check-equal? 
     (binadd 1 '(1 0 1) '()) '(0 1 1))
 
@@ -148,12 +128,12 @@ E.G.  (let* ((x 1) (y (+ x 3))) (+ x y)) returns 5
 
   (check-equal? 
     (binadd 0 '(1 0 1) '(0 1 1)) '(1 1 0 1))
-
+  
   (check-equal? 
     (binadd 0 '(1 1 1) '(1 1 1)) '(0 1 1 1))
 
 )
-(print "Running binadd tests") (newline)
+(print "Running binadd tests")  (newline)
 (run-tests binadd-suite 'verbose)
 
 ; (binmult2 h b) multiplies a binary number by a power of two
@@ -165,50 +145,29 @@ E.G.  (let* ((x 1) (y (+ x 3))) (+ x y)) returns 5
 ; bit of the binary number.
 
 (define (binmult2 h b)
-  (cond
-    [(if (eq? 0 h) b
-         (cons 0 (binmult2 (- h 1) b))
-    )]
-  )
-)
+  (if (= h 0) b (cons 0 (binmult2 (- h 1) b))))
 
-; (binmult h a b) computes the product of two binary numbers multiplied
-; by a power of two.
-; Inputs: h a non-negative integer, a and b normalized binary numbers.
-; Output: a normalized binary number equal to 2^h*a*b.
+; (binmult a b) computes the product of two binary numbers.
+; Inputs: a and b normalized binary numbers.
+; Output: a normalized binary number equal to a*b.
 ;
-; Note: Let a = (a_0 a_1 ... a_{m-1}).  The following recursive construction
+; Note 1: Let a = (a_0 a_1 ... a_{m-1}).  The following recursive construction
 ; is used, which shows why the parameter h is included.
 ; a*b = a_0*b + 2*(a_1 ... a_{m-1})*b
+;
+; Note 2:  The recursion is only on the first input a and the
+;          recursive call has (rest a) as input which is closer to
+;          the base case (binzero? a).  The extra check (binzero? b)
+;          is needed to guarantee that the output is normalized.
+;        
 
 (define (binmult a b)
   (cond
-    [(eq? a zero) zero]
-    [(eq? b zero) zero]
-    [(eq? a one) b]
-    [(eq? b one) a]
-#|
-    sum = []
-    for item in list1
-    if item = 1
-    list2 * 10 ^ index(list1[item])
-    sum += list2
-
-    (binadd 0 (binmult2 1 b) (binadd 0 (binmult2 2 b) (binadd 0 (binmult2 3 b))))
-|#   
-    ;[else (binadd 0 (binmult2 (quotient (length a) 2)) b) (binmult (rest a) b))]
-    [else (if (eq? (first a) 0)
+    [(binzero? a) zero]
+    [(binzero? b) zero]
+    [else (if (= (first a) 0)
               (binmult2 1 (binmult (rest a) b))
-              (binadd 0 b (binmult2 1 (binmult (rest a) b))))]
-    ;0 + 101 + "0101" + 00101 = 10011 ?
-    ;2 * (2 * (0 + 5 + (2 * 0))
-    ;'(1 0 1), '(0 1), '(1)
-    ;0 + 0 + 00101 
-    ;[else (binadd 0 (binmult (rest a) b) (binmult2 (length a) b))]
-    ;[else (binadd (binmult (first a) b) (binmult2 (rest a) b))]
-    ;[else (binadd (binmult2 (first a) b) (binmult (rest a) b))]
-  )
-)
+              (binadd 0 b (binmult2 1 (binmult (rest a) b))))]))
 
 ; Unit tests - tests binmult.
 (define-test-suite binmult-suite
@@ -239,9 +198,6 @@ E.G.  (let* ((x 1) (y (+ x 3))) (+ x y)) returns 5
 
   (check-equal? 
     (binmult '(1 0 1) '(1 0 1)) '(1 0 0 1 1))
-
-  (check-equal? 
-    (binmult '(1 1 1) '(1 1 1)) '(1 0 0 0 1 1))
 )
 (print "Running binmult tests")  (newline)
 (run-tests binmult-suite 'verbose)

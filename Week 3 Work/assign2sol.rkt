@@ -160,7 +160,10 @@ For questions 1-3 you should uncomment the appropriate unit tests.
 (define (div m n)
   (if (eq? n 'zero)
       'zero
-      (succ (sub n (div m (pred n)))))
+      (if (ltnat? m n)
+      'zero
+      (succ (div (sub m n) n))
+      ))
 )
 
 ; Remainder of Peano numbers
@@ -179,7 +182,9 @@ For questions 1-3 you should uncomment the appropriate unit tests.
 ; Note:  See definition of gcd and algorithm for computing the gcd above.
 (define (gcd m n)
   (if (eq? n 'zero)
-      'zero
+      m
+      (gcd n (rem m n))
+  )
 )
 #|
 Question 3.  Implement a function to compute the greatest common divisor
@@ -219,7 +224,7 @@ For questions 1-3 you should uncomment the appropriate unit tests.
      (gcd (mult four six) (mult three five)) three)
 
   )
-  
+
 (print "Running Peano number tests")  (newline)
 (run-tests peano-suite 'verbose)
 
@@ -285,12 +290,44 @@ Question 5.  Implement a recursive function to multiply two binary numbers.
 ; Inputs: a and b binary numbers.
 ; Output: a binary whose value is the value of a + b.
 ;         if a and b are normalized (plus a b) will be normalized.
+(define (prev b)
+  (cond
+    [(binone? b) 'zero]
+    [(double? b) (op b)]
+    [(double-plus1? b) (double (op b))]
+))
+
 (define (binplus a b)
-  "binplus not implemented yet")
-#|
+  (cond
+    #|
+    [(binzero? a) b]
+    [(binzero? b) a]
+    [(binone? a) (inc b)]
+    [(binone? b) (inc a)]
+    [(double? a) (inc (inc b))]
+    [(double? b) (inc (inc a))]
+    [(double-plus1? a) (inc (inc (inc b)))]
+    [(double-plus1? b) (inc (inc (inc a)))]
+    |#
+    ;[else (binplus (op a) (inc b))]
+    [(binzero? a) b]
+    [(binzero? b) a]
+    [else (binplus (prev a) (inc b))]
+    ;[(binone? a) (binplus (op a) (inc b))]
+    ;[(double? a) (binplus (op a) (double b))]
+    ;[(double-plus1? a) (binplus (op a) (double-plus1 b))]
+    #|
+    
+    [(binone? b) (binplus (inc a) (op b))]
+    [(double? b) (binplus (double a) (op b))]
+    [(double-plus1? b) (binplus (double-plus1 a) (op b))]
+    |#
+  )
+)
+
 ; Unit tests - tests binplus.
 (define-test-suite binplus-suite
-
+  
   (check-equal? 
     (binplus binzero binthree) binthree)
 
@@ -308,11 +345,12 @@ Question 5.  Implement a recursive function to multiply two binary numbers.
 
   (check-equal? 
     (binplus binthree binthree) '(D (DP1 (DP1 zero))))
+
   )
-  
+
 (print "Running binplus tests")  (newline)
 (run-tests binplus-suite 'verbose)
-|#
+
   
 ; multiply two binary numbers
 ; Inputs: a and b binary numbers.
@@ -323,8 +361,20 @@ Question 5.  Implement a recursive function to multiply two binary numbers.
 ;        see why, compute (mult one one)
 
 (define (binmult a b)
-   "binmult not implemented yet")
-#|  
+  (cond
+    [(binzero? a) a]
+    [(binzero? b) b]
+    [(binone? a) b]
+    [(binone? b) a]
+    [(double? a) (binmult (op a) (double b))]
+    [(double? b) (binmult (double a) (op b))]
+    [else (binmult (op a) (double (prev b)))]
+  )
+)
+#|
+11 x 11 = 1001
+[2 * (2 * (0 + 1) + 1)] * [2 * (2 * (0 + 1) + 1)]
+|#
 ; Unit tests - tests binmult.
 (define-test-suite binmult-suite
 
@@ -355,4 +405,3 @@ Question 5.  Implement a recursive function to multiply two binary numbers.
   
 (print "Running binmult tests")  (newline)
 (run-tests binmult-suite 'verbose)
-|#
