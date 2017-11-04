@@ -186,21 +186,6 @@ For questions 1-3 you should uncomment the appropriate unit tests.
       (gcd n (rem m n))
   )
 )
-#|
-Question 3.  Implement a function to compute the greatest common divisor
-             of the Peano numbers m and n.  g = gcd(m,n) satisfies
-             1)  g is a common divisor of m and n.
-                 g divides m and g divides n.  I.E. the remainder when
-                 dividing m and n by g is 0.
-             2)  g is the greatest common divisor.
-                 If e divides m and e divides n then e must divide g.
-
-             The gcd(m,n) can be computed recursively.
-             1)  gcd(m,0) = m
-             2)  gcd(m,n) = gcd(n,remainder of m divided by n).
-
-For questions 1-3 you should uncomment the appropriate unit tests.
-|#
 
 ; Unit tests - tests Peano arithmetic.
 (define-test-suite peano-suite
@@ -293,7 +278,7 @@ Question 5.  Implement a recursive function to multiply two binary numbers.
 (define (prev b)
   (cond
     [(binone? b) 'zero]
-    [(double? b) (op b)]
+    [(double? b) (double-plus1 (op b))]
     [(double-plus1? b) (double (op b))]
 ))
 
@@ -362,13 +347,15 @@ Question 5.  Implement a recursive function to multiply two binary numbers.
 
 (define (binmult a b)
   (cond
-    [(binzero? a) a]
-    [(binzero? b) b]
+    [(or (binzero? a) (binzero? b)) 'zero]
+    ;[(binzero? a) a]
+    ;[(binzero? b) b]
     [(binone? a) b]
-    [(binone? b) a]
-    [(double? a) (binmult (op a) (double b))]
-    [(double? b) (binmult (double a) (op b))]
-    [else (binmult (op a) (double (prev b)))]
+    ;[(binone? b) a]
+    [(double? a) (double (binmult (op a) b))]
+    ;[(double? a) (binplus (binmult b (op a)) (binmult b (op a)))]
+    ;[(double? b) (binplus a (binmult a (op b)))]
+    [else (binplus b (binmult (prev a) b))]
   )
 )
 #|
