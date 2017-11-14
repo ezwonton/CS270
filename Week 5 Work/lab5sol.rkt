@@ -1,0 +1,337 @@
+#lang racket
+(require racket/contract)
+(require rackunit)
+(require rackunit/text-ui)
+
+#|
+Lab 5: Boolean Expressions and a Tautology Checker.
+CS 270 Math Foundations of CS.
+Jeremy Johnson and Mark Boady.
+
+In this lab students will implement a Racket program to check to see if
+a Boolean expression is a tautology.  I.E. whether all assignments
+of the variables occuring in the expression evaluate to true.
+
+This will be accomplished by the following steps:
+
+1)  Part 2.  Determine the variables occuring in the Boolean expression.
+    
+
+2)  Part 3.  Construct all possible assignments for the variables in (1).
+    Each possible assignment will be stored in an environment, which is
+    a list of bindings.
+
+3)  Part 4. Evaluate the boolean expression for each environment constructed
+    in (2) and check to see that the expression is true for all of the
+    environments.  The list of environments along with the corresponding
+    boolean values is a truth table for the given boolean expression.
+
+In Part 1 students will study and make a small modification to the boolean
+evaluation function provided in lecture which is provided below.
+
+
+Boolean Expressions are defined recursively as
+BExpr ::=
+constant|variable|('not BExpr)|('or BExpr BExpr)|('and BExpr BExpr)
+constant ::= true|false
+
+E.G. '(and p (or true (not q)))
+
+|#
+
+; Predicate to check for a Boolean expression
+(define (boolean-expr? expr)
+  (cond
+    [(constant? expr) #t]
+    [(variable? expr) #t]
+    [(negation? expr) (boolean-expr? (op1 expr))]
+    [(disjunction? expr) (and (boolean-expr? (op1 expr))
+                              (boolean-expr? (op2 expr)))]
+    [(conjunction? expr) (and (boolean-expr? (op1 expr))
+                              (boolean-expr? (op2 expr)))]
+    [(implication? expr) (and (boolean-expr? (op1 expr))
+                              (boolean-expr? (op2 expr)))]
+    [else #f]))
+
+; Function to evaluate a Boolean expression
+(define (boolean-eval expr env)
+  (cond
+    [(constant? expr) (if (eq? expr 'true) #t #f)]
+    [(variable? expr) (lookup expr env)]
+    [(negation? expr) (not (boolean-eval (op1 expr) env))]
+    [(disjunction? expr) (or (boolean-eval (op1 expr) env)
+                              (boolean-eval (op2 expr) env))]
+    [(conjunction? expr) (and (boolean-eval (op1 expr) env)
+                              (boolean-eval (op2 expr) env))]
+    [(implication? expr) (implies (boolean-eval (op1 expr) env)
+                                  (boolean-eval (op2 expr) env))]
+    ))
+
+; predicate to check for symbols that are reserved.
+(define (is-reserved-word? word)
+  (cond
+   [ (eq? word '#t) #t]
+   [ (eq? word '#f) #t]
+   [ (eq? word 'true) #t]
+   [ (eq? word 'false) #t]
+   [ (eq? word 'or) #t]
+   [ (eq? word 'and) #t]
+   [ (eq? word 'not) #t]
+   [ (eq? word 'implies) #t]
+   [ (eq? word 'iff) #t]
+   [ (eq? word 'xor) #t]
+   ;Otherwise
+   [ else #f]
+  )
+ )
+; Predicate to check for Boolean constant
+(define (constant? expr)
+  (or (eq? expr 'true) (eq? expr 'false)))
+
+; Predicate to check for a variable
+(define (variable? expr)
+  (and (symbol? expr) (not (is-reserved-word? expr))))
+
+; Predicate to check for a negation
+(define (negation? expr)
+  (and (list? expr)
+       (= (length expr) 2)
+       (eq? (first expr) 'not)))
+
+; Predicate to check for a disjunction
+(define (disjunction? expr)
+  (and (list? expr)
+       (= (length expr) 3)
+       (eq? (first expr) 'or)))
+
+; Predicate to check for a conjunction
+(define (conjunction? expr)
+  (and (list? expr)
+       (= (length expr) 3)
+       (eq? (first expr) 'and)))
+
+; Predicate to check for a implication
+(define (implication? expr)
+  (and (list? expr)
+       (= (length expr) 3)
+       (eq? (first expr) 'implies)))
+
+; access functions for Boolean expressions
+(define (op1 expr)
+  (second expr))
+
+(define (op2 expr)
+  (third expr))
+
+; construct binding
+(define (binding var value)
+  (list var value))
+
+; (get-var-in-binding b)
+; Inputs: b = (var val) a binding
+; Output: var the variable in b
+
+(define (get-var-in-binding b)
+  (first b))
+
+; (get-val-in-binding b)
+; Inputs: b = (var val) a binding
+; Output: val the value in b
+
+(define(get-val-in-binding b)
+  (second b))
+; (lookup? var env)
+; Inputs: var is a variable - Racket symbol and env is an environment.
+; Output: if var is in env, then the S-expression associated with var
+;         if var is not in env an error is thrown using the built-in
+;         error function.
+(define (lookup var env)
+  (cond
+    [(null? env) (error var "not found")]
+    [(eq? var (get-var-in-binding (first env)))
+     (get-val-in-binding (first env))]
+    [else (lookup var (rest env))]))
+
+#| Part 1 - Boolean Evaluation
+Study the function (boolean-eval expr env) that evaluates a boolean
+expression using the bindings for variables given in the environment env.
+You may assume that all variables occuring in expr are bound in env.
+
+After studying the code, add an additional constuctor for the case when
+a boolean expression is built from an implication.  You will need to write
+a predicate that checks for an implication which should be represented by
+the list '(implies exp1 exp2).  You also need to modify the function
+(boolean-eval expr) to handle the case when expr is an implication.
+|#
+
+; Unit tests - tests boolean-eval.
+(define-test-suite boolean-eval-suite
+
+  (check-equal?
+     (boolean-eval '(and p (or true (not q))) '((p #t) (q #f))) #t)
+  
+  (check-equal? 
+    (boolean-eval '(implies x y) '((x #f) (y #f))) #t)
+
+  (check-equal? 
+    (boolean-eval '(implies x y) '((x #f) (y #t))) #t)
+
+  (check-equal? 
+    (boolean-eval '(implies x y) '((x #t) (y #f))) #f)
+
+  (check-equal? 
+    (boolean-eval '(implies x y) '((x #t) (y #t))) #t)
+
+  (check-equal? 
+    (boolean-eval '(implies (and x y) z) '((x #t) (y #t) (z #t))) #t)
+
+  (check-equal? 
+    (boolean-eval '(implies (and x y) z) '((x #t) (y #t) (z #f))) #f)
+
+  (check-equal? 
+    (boolean-eval '(implies x (implies y z)) '((x #t) (y #t) (z #t))) #t)
+
+  (check-equal? 
+    (boolean-eval '(implies x (implies y z)) '((x #t) (y #t) (z #f))) #f)
+)
+(print "Running boolean-eval tests")  (newline)
+(run-tests boolean-eval-suite 'verbose)
+
+
+#| Part 2 - Get Variables
+Write a function that returns the set of variables occuring in a Boolean
+expression.  You may use the helper function (union S1 S2) which returns
+the union of two sets which are represented by lists of distinct atoms.
+
+Hint:  Your function should process all possible constructors for a
+Boolean expression and return the appropriate list in each case.  What
+are the base cases and what do you return in those case?  In the recursive
+cases you will need to combine the list of variables returned for the inputs
+to the corresponding constructor.  E.G.  For (or E1 E2) you recursively
+get the list of variables occuring in the Boolean expressions E1 and E2.
+How do you combine the lists from the recursive calls to build the list
+of variables in (or E1 E2)?  You may use the function union below.
+|#
+
+(define (union S1 S2)
+  (remove-duplicates (append S1 S2)))
+
+; Function to get variables in a Boolean expression
+(define (get-variables expr)
+  (cond
+    [(constant? expr) null]
+    [(variable? expr) (list expr)]
+    [(negation? expr) (get-variables (op1 expr))]
+    [(disjunction? expr)(union (get-variables (op1 expr))
+                              (get-variables (op2 expr)))]
+    [(conjunction? expr) (union (get-variables (op1 expr))
+                              (get-variables (op2 expr)))]
+    [(implication? expr) (union (get-variables (op1 expr))
+                              (get-variables (op2 expr)))]
+    ))
+
+(define-test-suite get-variables-suite
+
+  (check-equal?
+     (get-variables 'true) '())
+
+  (check-equal?
+     (get-variables 'p) '(p))
+  
+  (check-equal?
+     (sort (get-variables '(and p (or true (not q)))) symbol<?) '(p q))
+
+  (check-equal?
+     (sort (get-variables '(and p (or p (not q)))) symbol<?) '(p q))
+)
+(print "Running get-variables tests")  (newline)
+(run-tests get-variables-suite 'verbose)
+  
+#| Part 3 - Generate Truth Table
+
+A truth table for a set of variables is a list of environments
+with an environement corresponding to each possible set of bindings
+for the given variables.
+E.G.  (((a #t)) ((a #f))) is the truth table for a single variable a.
+'(((a #t) (b #t)) ((a #t) (b #f)) ((a #f) (b #t)) ((a #f) (b #f)))
+is the truth table for the set of variables '(a b).  Note that there
+are four environments in the truth table corresponding to the four
+possible assignments of two variables.
+
+Write a function (generate-truth-table vars) which constructs a truth
+table for a given set of variables.
+
+Hint:  To generate a truth table for variables V = (v1 v2 ... vn)
+       recursively generate a truth table for (rest V) and then
+       combine the list of environments obtained by consing (v1 #t) to
+       every environment in the recursive truth table with the list of
+       environments obtained by consing (v1 #f) to every environment
+       in the recursive truth table.  What is  your base case?
+       Using map is a good idea.
+|#
+
+(define (generate-truth-table vars)
+  (if (null? vars)
+      '(())
+      (append
+       (map (lambda (env) (cons (binding (first vars) #t) env))
+            (generate-truth-table (rest vars)))
+       (map (lambda (env) (cons (binding (first vars) #f) env))
+            (generate-truth-table (rest vars))))))
+
+(define-test-suite generate-truth-table-suite
+
+  (check-equal?
+     (generate-truth-table '()) '(()))
+
+  (check-equal?
+     (generate-truth-table '(b)) '( ((b #t)) ((b #f)) ))
+
+  (check-equal?
+     (generate-truth-table '(a b)) '( ((a #t) (b #t))
+                                      ((a #t) (b #f))
+                                      ((a #f) (b #t))
+                                      ((a #f) (b #f))
+                                     ) )
+  
+)
+(print "Running generate-truth-table tests")  (newline)
+(run-tests generate-truth-table-suite 'verbose)
+
+#| Part 4 - Tautology Checker
+Write a function that determines if a Boolean expression is a tautology.
+I.E. return true if the expression evaluates to true for all assignments
+of variables.
+
+Do this by
+
+1) Constructing a Truth Table for the variables occuring in the Boolean
+   expression.  Use get-variables from Part 2 to get the set of variables
+   occuring in the Boolean expression.
+2) Evaluating using the function boolean-eval from Part 1 the Boolean
+   expression for each possible variable assignment in the truth table.
+3) Checking to see if all of the evaluations from (2) are true.
+
+If you use the map/foldr paradigm from Lab 2, the code for (2) and (3)
+is elegant and short.
+|#    
+
+  (define (is-tautology? expr)
+    (foldr (lambda (x y) (and x y)) #t
+           (map (lambda (env) (boolean-eval expr env))
+                (generate-truth-table (get-variables expr)))))
+
+(define-test-suite tautology-suite
+
+  (check-equal?
+     (is-tautology? '(or p (not p))) #t)
+
+    (check-equal?
+     (is-tautology? '(and p (not p))) #f)
+
+    (check-equal?
+     (is-tautology? '(and (implies (implies p q) (or (not p) q))
+                          (implies (or (not p) q) (implies p q)))) #t)
+)
+(print "Running tautology tests")  (newline)
+(run-tests tautology-suite 'verbose)
