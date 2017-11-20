@@ -367,6 +367,7 @@ This file already contains many comments, so you can see what the syntax is.
 ;no-or-above-and?
 (define (no-or-above-and? expr)
   (cond
+    [(constant? expr) #t]
     [(variable? expr) #t]
     [(negation? expr) #t]
     [(conjunction? expr) (and (no-or-above-and? (op1 expr)) (no-or-above-and? (op2 expr)))]
@@ -417,10 +418,9 @@ This file already contains many comments, so you can see what the syntax is.
 ; Output: A boolean expression in CNF that is equivalent to the input expression.
 (define (nnf2cnf expr)
   (cond
+    [(constant? expr) expr]
     [(variable? expr) expr]
-
-    [(negation? expr) (nnf expr)]
-    
+    [(negation? expr) expr]
     [(conjunction? expr) (list 'and (nnf2cnf (op1 expr)) (nnf2cnf (op2 expr)))]
     [else (disjunction? expr) (if (no-or-above-and? expr)
                                   expr
