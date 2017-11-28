@@ -52,21 +52,10 @@
   )
 )
 (println "")
-;(GenDominoes 0)
-;(GenDominoes 1)
-;(GenDominoes 2)
+(GenDominoes 0)
+(GenDominoes 1)
+(GenDominoes 2)
 (GenDominoes 3)
 (GenDominoes 4)
-;(GenDominoes 5)
-;(GenDominoes 6)
-
-
-
-(define (reverse l)
-  (if (null? l)
-      null
-      (append (reverse (rest l)) (cons (first l) null))))
-(reverse '(1 1 0 0))
-(reverse '(1 1 0 1))
-
-
+(GenDominoes 5)
+(GenDominoes 6)
