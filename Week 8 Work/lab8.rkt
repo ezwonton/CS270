@@ -24,6 +24,7 @@
 (define (postage46 x)
   (cond
     [(odd? x) (println "Impossible")]
+    [(= x 10) (list 1 1)]
     [(= x 14) (list 2 1)]
     [(= x 12) (list 3 0)]
     [(= x 16) (list 1 2)]
@@ -37,7 +38,7 @@
 (postage46 18)
 (postage46 20)
 (postage46 21)
-
+(postage46 22)
 
 
 
@@ -51,12 +52,12 @@
       '("")
   )
 )
-(println "")
+;(println "")
 ;(GenDominoes 0)
 ;(GenDominoes 1)
 ;(GenDominoes 2)
-(GenDominoes 3)
-(GenDominoes 4)
+;(GenDominoes 3)
+;(GenDominoes 4)
 ;(GenDominoes 5)
 ;(GenDominoes 6)
 
@@ -65,7 +66,12 @@
 (define (reverse l)
   (if (null? l)
       null
-      (append (reverse (rest l)) (cons (first l) null))))
+      (append (reverse (rest l)) (cons (first l) null))
+  )
+)
+
+
+
 (reverse '(1 1 0 0))
 (reverse '(1 1 0 1))
 
