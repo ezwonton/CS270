@@ -1,0 +1,22 @@
+#lang racket
+
+
+(define (plus-simp expr1 expr2)
+  (cond
+    [ (and (constant? expr1) (constant? expr2)) (+ expr1 expr2) ] [ (equal? expr1 0) expr2 ]
+    [ (equal? expr2 0) expr1 ]
+    [ (make-plus expr1 expr2) ]
+  )
+)
+
+
+(define (mult-simp expr1 expr2)
+  (cond
+    [ (and (constant? expr1) (constant? expr2)) (* expr1 expr2) ] [ (equal? expr1 0) 0 ]
+    [ (equal? expr2 0) 0 ]
+    [ (equal? expr1 1) expr2 ]
+    [ (equal? expr2 1) expr1 ]
+    [ else (make-mult expr1 expr2) ]
+  )
+)
+
