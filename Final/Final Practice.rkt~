@@ -1,0 +1,12 @@
+#lang racket
+
+
+
+; Binary Trees for Final Exam Practice
+
+
+
+(define (left T) (second T))
+(define (right T) (third T))
+(define (value T) (first T))
+;Define the following access functions to access the left and right children and value of a node.

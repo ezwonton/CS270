@@ -38,6 +38,12 @@
 )
 
 
+(define (is-simplified? expr)
+  (if (constant? expr)
+      #t
+      (and (noconstant-arith? expr) (nozeros? expr) (nomult1? expr))))
+
+
 (define (noconstant-arith? expr)
   (cond
    [ (constant? expr) #t ]
